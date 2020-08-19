@@ -2,46 +2,32 @@
 /**
  *
  * This is a simple Reed-Solomon encoder
+ *
  * (C) Cliff Hones 2004
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * It is not written with high efficiency in mind, so is probably
+ * not suitable for real-time encoding.  The aim was to keep it
+ * simple, general and clear.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <Some notes on the theory and implementation need to be added here>
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ * Usage:
+ * First call rs_init_gf(poly) to set up the Galois Field parameters.
+ * Then  call rs_init_code(size, index) to set the encoding size
+ * Then  call rs_encode(datasize, data, out) to encode the data.
  *
+ * These can be called repeatedly as required - but note that
+ * rs_init_code must be called following any rs_init_gf call.
+ *
+ * If the parameters are fixed, some of the statics below can be
+ * replaced with constants in the obvious way, and additionally
+ * malloc/free can be avoided by using static arrays of a suitable
+ * size.
  */
 
-// It is not written with high efficiency in mind, so is probably
-// not suitable for real-time encoding.  The aim was to keep it
-// simple, general and clear.
-//
-// <Some notes on the theory and implementation need to be added here>
-
-// Usage:
-// First call rs_init_gf(poly) to set up the Galois Field parameters.
-// Then  call rs_init_code(size, index) to set the encoding size
-// Then  call rs_encode(datasize, data, out) to encode the data.
-//
-// These can be called repeatedly as required - but note that
-// rs_init_code must be called following any rs_init_gf call.
-//
-// If the parameters are fixed, some of the statics below can be
-// replaced with constants in the obvious way, and additionally
-// malloc/free can be avoided by using static arrays of a suitable
-// size.
-
-#include <stdio.h>		// only needed for debug (main)
-#include <stdlib.h>		// only needed for malloc/free
-#include <string.h>             // only needed for memset
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "reedsol.h"
 
 static int gfpoly;
@@ -51,35 +37,37 @@ static int rlen;
 
 static int *log = NULL, *alog = NULL, *rspoly = NULL;
 
-// rs_init_gf(poly) initialises the parameters for the Galois Field.
-// The symbol size is determined from the highest bit set in poly
-// This implementation will support sizes up to 30 bits (though that
-// will result in very large log/antilog tables) - bit sizes of
-// 8 or 4 are typical
-//
-// The poly is the bit pattern representing the GF characteristic
-// polynomial.  e.g. for ECC200 (8-bit symbols) the polynomial is
-// a**8 + a**5 + a**3 + a**2 + 1, which translates to 0x12d.
-
-void rs_init_gf(int poly)
+/*
+ * rs_init_gf(poly) initialises the parameters for the Galois Field.
+ * The symbol size is determined from the highest bit set in poly
+ * This implementation will support sizes up to 30 bits (though that
+ * will result in very large log/antilog tables) - bit sizes of
+ * 8 or 4 are typical
+ *
+ * The poly is the bit pattern representing the GF characteristic
+ * polynomial.  e.g. for ECC200 (8-bit symbols) the polynomial is
+ * a**8 + a**5 + a**3 + a**2 + 1, which translates to 0x12d.
+ */
+void
+rs_init_gf(int poly)
 {
 	int m, b, p, v;
 
-	// Return storage from previous setup
+	/* Return storage from previous setup */
 	if (log) {
 		free(log);
 		free(alog);
 		free(rspoly);
 		rspoly = NULL;
 	}
-	// Find the top bit, and hence the symbol size
+	/* Find the top bit, and hence the symbol size */
 	for (b = 2, m = 0; b <= poly; b <<= 1)
 		m++;
 	b >>= 1;
 	gfpoly = poly;
 	symsize = m;
 
-	// Calculate the log/alog tables
+	/* Calculate the log/alog tables */
 	logmod = (1 << m) - 1;
 	log = (int *)calloc(logmod + 1, sizeof(*log));
 	alog = (int *)calloc(logmod, sizeof(*alog));
@@ -93,14 +81,16 @@ void rs_init_gf(int poly)
 	}
 }
 
-// rs_init_code(nsym, index) initialises the Reed-Solomon encoder
-// nsym is the number of symbols to be generated (to be appended
-// to the input data).  index is usually 1 - it is the index of
-// the constant in the first term (i) of the RS generator polynomial:
-// (x + 2**i)*(x + 2**(i+1))*...   [nsym terms]
-// For ECC200, index is 1.
-
-void rs_init_code(int nsym, int index)
+/*
+ * rs_init_code(nsym, index) initialises the Reed-Solomon encoder
+ * nsym is the number of symbols to be generated (to be appended
+ * to the input data).  index is usually 1 - it is the index of
+ * the constant in the first term (i) of the RS generator polynomial:
+ * (x + 2**i)*(x + 2**(i+1))*...   [nsym terms]
+ * For ECC200, index is 1.
+ */
+void
+rs_init_code(int nsym, int index)
 {
 	int i, k;
 
@@ -124,11 +114,13 @@ void rs_init_code(int nsym, int index)
 	}
 }
 
-// Note that the following uses byte arrays, so is only suitable for
-// symbol sizes up to 8 bits.  Just change the data type of data and res
-// to unsigned int * for larger symbols.
-
-void rs_encode(int len, const unsigned char *data, unsigned char *res)
+/*
+ * Note that the following uses byte arrays, so is only suitable for
+ * symbol sizes up to 8 bits.  Just change the data type of data and res
+ * to unsigned int * for larger symbols.
+ */
+void
+rs_encode(int len, const unsigned char *data, unsigned char *res)
 {
 	int i, k, m;
 	memset(res, 0, rlen);
@@ -151,8 +143,9 @@ void rs_encode(int len, const unsigned char *data, unsigned char *res)
 }
 
 #ifdef TEST
-// The following tests the routines with the ISO/IEC 16022 Annexe R data
-int reedsol_main(void)
+/* The following tests the routines with the ISO/IEC 16022 Annexe R data */
+int
+reedsol_main(void)
 {
 	register int i;
 
