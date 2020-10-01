@@ -846,7 +846,7 @@ unsigned char *iec16022ecc200(int *Wptr, int *Hptr, char **encodingptr,
 			      int barcodelen, const unsigned char *barcode,
 			      int *lenp, int *maxp, int *eccp)
 {
-    return iec16022ecc200f(Wptr, Hptr, encodingptr, barcodelen, barcode, lenp, maxp, eccp, 0);
+    return iec16022ecc200f(Wptr, Hptr, encodingptr, barcodelen, barcode, lenp, maxp, eccp, 1);
 }
 
 /*
