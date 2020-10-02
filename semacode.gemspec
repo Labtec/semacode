@@ -27,7 +27,7 @@ DESC
     'ext/**/*.c',
     'ext/**/*.h',
     'tests/**/*.rb',
-    'README',
+    'README.rdoc',
     'CHANGELOG',
     'Rakefile']
   s.require_path = 'lib'
