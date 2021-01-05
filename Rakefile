@@ -28,8 +28,9 @@ DESC
     'ext/**/*.c',
     'ext/**/*.h',
     'tests/**/*.rb',
-    'README.rdoc',
+    'README.md',
     'CHANGELOG',
+    'LICENSE.md',
     'Rakefile'].to_a
   s.require_path = 'lib'
   s.test_files = FileList['{tests}/**/*test.rb'].to_a

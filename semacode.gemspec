@@ -27,8 +27,9 @@ DESC
     'ext/**/*.c',
     'ext/**/*.h',
     'tests/**/*.rb',
-    'README.rdoc',
+    'README.md',
     'CHANGELOG',
+    'LICENSE.md',
     'Rakefile']
   s.require_path = 'lib'
   s.test_files = Dir['{tests}/**/*test.rb']
