@@ -5,7 +5,7 @@ require 'rubygems/package_task'
 
 spec = Gem::Specification.new do |s|
   s.name = 'semacode'
-  s.version = '0.7.5'
+  s.version = '0.7.6'
   s.author = 'Guido Sohne'
   s.email = 'guido@sohne.net'
   s.homepage = 'http://sohne.net/projects/semafox/'
@@ -22,7 +22,7 @@ spec = Gem::Specification.new do |s|
 DESC
 
   s.extensions << 'ext/extconf.rb'
-  s.add_dependency('rake', '~> 0.7', '>= 0.7.0')
+  s.add_dependency('rake', '>= 0.7.0')
   s.files = FileList[
     '{lib,ext}/**/*.rb',
     'ext/**/*.c',
