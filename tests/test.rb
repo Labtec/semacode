@@ -31,7 +31,7 @@ def show_as_html(cell_size, prefix, semacode)
   	height: #{cell_size}px;
   	padding: 0px;
   	margin: 0px;
-  	border: 0px;    	
+  	border: 0px;
   	float: left;
   	display: block;
   }
@@ -82,7 +82,7 @@ def prelude
 
   semacode.encode('http://sohne.net/')
 
-  html = show_as_html(8, text, semacode)
+  show_as_html(8, text, semacode)
 end
 
 semacode = DataMatrix::Encoder.new 'http://www.ruby-lang.org'
